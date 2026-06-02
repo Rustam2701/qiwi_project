@@ -1,0 +1,253 @@
+{
+  "info": {
+    "_postman_id": "qiwi-payout-api-tests",
+    "name": "QIWI Payout API",
+    "description": "Коллекция для тестирования QIWI Payout API (Доступность, Баланс, Создание и Исполнение платежа)",
+    "schema": "https://getpostman.com"
+  },
+  "item": [
+    {
+      "name": "1. Доступность сервиса (Список платежей)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус ответа 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Контракт: ответ является массивом данных\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1/agents/{{agentId}}/points/{{pointId}}/payments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "agents",
+            "{{agentId}}",
+            "points",
+            "{{pointId}}",
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Запрос баланса",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус ответа 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Условие: Баланс строго больше 0\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var balance = parseFloat(jsonData.available.value);",
+              "    pm.expect(balance).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1/agents/{{agentId}}/points/{{pointId}}/balance",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "agents",
+            "{{agentId}}",
+            "points",
+            "{{pointId}}",
+            "balance"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Создание платежа на 1 рубль",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус ответа 200 или 201\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test(\"Платеж успешно создан и готов к проведению\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status.value).to.be.oneOf([\"READY\", \"ACCEPTED\"]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"recipientDetails\": {\n        \"providerCode\": \"qiwi-wallet\",\n        \"fields\": {\n            \"account\": \"79123456789\"\n        }\n    },\n    \"amount\": {\n        \"value\": \"1.00\",\n        \"currency\": \"RUB\"\n    }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/agents/{{agentId}}/points/{{pointId}}/payments/{{$guid}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "agents",
+            "{{agentId}}",
+            "points",
+            "{{pointId}}",
+            "payments",
+            "{{$guid}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Исполнение платежа",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Статус ответа 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Платеж успешно проведен или обрабатывается\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status.value).to.be.oneOf([\"SUCCESS\", \"PROCESSING\"]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"EXECUTE\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/agents/{{agentId}}/points/{{pointId}}/payments/{{lastPaymentId}}/status",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "agents",
+            "{{agentId}}",
+            "points",
+            "{{pointId}}",
+            "payments",
+            "{{lastPaymentId}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://qiwi.com",
+      "type": "string"
+    },
+    {
+      "key": "agentId",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "pointId",
+      "value": "789012",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "PLACE_YOUR_BEARER_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "lastPaymentId",
+      "value": "dynamically_generated_id",
+      "type": "string"
+    }
+  ]
+}
