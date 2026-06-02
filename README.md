@@ -14,6 +14,6 @@ Create .env file:
 
 QIWI_BASE_URL=https://qiwi.com
 
-QIWI_AGENT_ID=agent_id
-QIWI_POINT_ID=point_id
-QIWI_TOKEN=qiwi_token
+QIWI_AGENT_ID=xxx
+QIWI_POINT_ID=xxx
+QIWI_TOKEN=xxx
