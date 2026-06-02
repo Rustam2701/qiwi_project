@@ -14,3 +14,4 @@ Create .env file:
 
 API_TOKEN=xxx
 BASE_URL=xxx
+AGENT_ID=xxx
